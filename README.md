@@ -1,10 +1,9 @@
 #Database abstraction library php mysqli
 
 **Roadmap**
-* Pdo?
-* PhpUnit + Travis ?
+* Pdo
+* PhpUnit + Travis
 * Обеспечение безопасности выполнения запросов
-* ...
 ========
 
 ## Использование:
@@ -20,4 +19,5 @@
       DB::select('table_name', array(fields), [array('fields1'=>'condition1')]);
  ```
 @author Sultanov Damir <damir.s94777@gmail.com>
+
 @contributor Cherepanov Anton <davetoxa@gmail.com>
