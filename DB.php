@@ -1,7 +1,7 @@
 <?php
 /**
  * Класс для работы с БД
- * Database abstraction library for php mysqli
+ * DB abstraction library for php mysqli
  *
  * Использование:
  * DB::connect('localhost', 'root', '', '<имя БД>'); - подключаемся к БД
@@ -63,14 +63,14 @@ class DB
      * @param $host string имя сервера
      * @param $user string имя пользователь
      * @param $password string пароль
-     * @param $db_name string имя базы данных
+     * @param $DB_name string имя базы данных
      * @param string $charset кодировка, по умолчанию utf8
      * @throws Exception Could not connect
      * @return self::$link
      */
-    public static function connect($host, $user, $password, $db_name, $charset = 'utf8')
+    public static function connect($host, $user, $password, $DB_name, $charset = 'utf8')
     {
-        self::$link = new mysqli($host, $user, $password, $db_name);
+        self::$link = new mysqli($host, $user, $password, $DB_name);
         if (self::$link->connect_error) {
             throw new Exception(get_class() . ': Could not connect: ' . self::$link->connect_error);
         }
@@ -194,10 +194,10 @@ class DB
      */
     public static function insert($fields)
     {
-        $fields_array = Database::setArrayParameters('fields', $fields);
-        $values_array = Database::setArrayParameters('values', $fields);
+        $fields_array = DB::setArrayParameters('fields', $fields);
+        $values_array = DB::setArrayParameters('values', $fields);
         $sql = "INSERT INTO " . self::getTable() . " ($fields_array) VALUES ($values_array);";
-        Database::query($sql);
+        DB::query($sql);
     }
 
     /**
@@ -212,10 +212,10 @@ class DB
      */
     public static function update($set, $condition)
     {
-        $set_array = Database::setArrayParameters('set', $set);
-        $conditions_array = Database::setArrayParameters('where', $condition);
+        $set_array = DB::setArrayParameters('set', $set);
+        $conditions_array = DB::setArrayParameters('where', $condition);
         $sql = "UPDATE " . self::getTable() . " SET $set_array WHERE ($conditions_array) ;";
-        Database::query($sql);
+        DB::query($sql);
     }
 
     /**
@@ -233,19 +233,19 @@ class DB
      */
     public static function select($fields, $conditions = null, $operand = null)
     {
-        is_array($fields) ? $fields_array = Database::setArrayParameters('fields', $fields) : $fields_array = $fields;
+        is_array($fields) ? $fields_array = DB::setArrayParameters('fields', $fields) : $fields_array = $fields;
         if ($conditions != null) {
             if ($operand == null) {
-                $conditions_array = "WHERE (" . Database::setArrayParameters('where', $conditions) . ");";
+                $conditions_array = "WHERE (" . DB::setArrayParameters('where', $conditions) . ");";
             } else {
-                $conditions_array = "WHERE (" . Database::setArrayParameters('where', $conditions, $operand) . ");";
+                $conditions_array = "WHERE (" . DB::setArrayParameters('where', $conditions, $operand) . ");";
             }
         } else {
             $conditions_array = null;
         }
 
         $sql = "SELECT $fields_array FROM " . self::getTable() . " $conditions_array ;";
-        return Database::query($sql);
+        return DB::query($sql);
     }
 
     /**
@@ -258,9 +258,9 @@ class DB
      */
     public static function delete($conditions)
     {
-        $conditions_array = Database::setArrayParameters('where', $conditions);
+        $conditions_array = DB::setArrayParameters('where', $conditions);
         $sql = "DELETE FROM " . self::getTable() . " WHERE ($conditions_array)";
-        Database::query($sql);
+        DB::query($sql);
     }
 
     /**
@@ -273,9 +273,9 @@ class DB
      */
     public static function createTable($tableName, $fields, $typeTable = 'InnoDB', $charset = 'utf8', $collate = 'utf8_unicode_ci')
     {
-        $fields_values_array = Database::setArrayParameters('table', $fields);
+        $fields_values_array = DB::setArrayParameters('table', $fields);
         $sql = "CREATE TABLE IF NOT EXISTS $tableName($fields_values_array) ENGINE = $typeTable DEFAULT CHARSET = $charset COLLATE = $collate;";
-        Database::query($sql);
+        DB::query($sql);
     }
 
     /**
