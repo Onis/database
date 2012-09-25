@@ -1,12 +1,13 @@
 <?php
 /**
  * Класс для работы с БД
+ * Database abstraction library for php mysqli
  *
  * Использование:
- *  DB::connect('localhost', 'root', '', '<имя БД>'); - подключаемся к БД
- *  DB::query('Select * From table;'); - выполняем запрос на выборку
- *  DB::getResult(); - получение результата
- *  DB::close(); - закрываем соединение
+ * DB::connect('localhost', 'root', '', '<имя БД>'); - подключаемся к БД
+ * DB::query('Select * From table;'); - выполняем запрос на выборку
+ * DB::getResult(); - получение результата
+ * DB::close(); - закрываем соединение
  *
  * DB::insert('table_name', array('fields1'=>'values1'));
  * DB::update('table_name', array('fields1'=>'values1'), array('fields1'=>'condition1'));
@@ -15,7 +16,7 @@
  *
  * @author Sultanov Damir <damir.s94777@gmail.com>
  */
-class Database
+class DB
 {
     /**
      * @param string cсылка на подключение к базе данных
