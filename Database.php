@@ -4,9 +4,9 @@
  *
  * Использование:
  *  DB::connect('localhost', 'root', '', '<имя БД>'); - подключаемся к БД
- *  DB::exeQuery('Select * From table;'); - выполняем запрос на выборку
- *  $data = DB::getResult('array'); - заносим результат запроса в переменную
- *  DB::disconect(); - закрываем соединение
+ *  DB::query('Select * From table;'); - выполняем запрос на выборку
+ *  DB::getResult(); - получение результата
+ *  DB::close(); - закрываем соединение
  *
  * DB::insert('table_name', array('fields1'=>'values1'));
  * DB::update('table_name', array('fields1'=>'values1'), array('fields1'=>'condition1'));
@@ -25,7 +25,7 @@ class Database
     /**
      * @param boolean результат запроса
      */
-    private static $result=false;
+    private static $result = false;
 
     /**
      * @param object ссылка на объект
@@ -33,6 +33,7 @@ class Database
     private static $instance;
 
     /**
+     * @TODO Не используется
      * @param string данные
      */
     private static $data = array();
@@ -62,9 +63,11 @@ class Database
      * @param $user string имя пользователь
      * @param $password string пароль
      * @param $db_name string имя базы данных
-     * @throws Exception
+     * @param string $charset кодировка, по умолчанию utf8
+     * @throws Exception Could not connect
+     * @return self::$link
      */
-    public static function connect($host, $user, $password, $db_name, $charset)
+    public static function connect($host, $user, $password, $db_name, $charset = 'utf8')
     {
         self::$link = new mysqli($host, $user, $password, $db_name);
         if (self::$link->connect_error) {
@@ -75,15 +78,15 @@ class Database
     }
 
     /**
-     * Отключение от БД
+     * Закрывает ранее открытое соединение с базой данных
      */
-    public static function disconect()
+    public static function close()
     {
         self::$link->close();
     }
 
     /**
-     * Установление кодировки
+     * Установливает кодировку
      * @param string $charset кодировка
      * @throws Exception
      */
@@ -95,14 +98,13 @@ class Database
     }
 
     /**
-     * Вывод кодировки
+     * Возвращает кодировку, установленную для соединения с БД
      * @return string возвращает имя установленной кодировки
      */
     public static function getCharSet()
     {
         return self::$link->character_set_name();
     }
-
 
 
     /**
@@ -137,7 +139,7 @@ class Database
      * @throws Exception
      * @return string
      */
-    public static function exeQuery($query)
+    public static function query($query)
     {
         self::$result = self::$link->query($query);
         if (self::$link->errno) {
@@ -178,7 +180,7 @@ class Database
      */
     public static function getNumRows()
     {
-        return (self::$result->num_rows) ;
+        return (self::$result->num_rows);
     }
 
     /**
@@ -194,7 +196,7 @@ class Database
         $fields_array = Database::setArrayParameters('fields', $fields);
         $values_array = Database::setArrayParameters('values', $fields);
         $sql = "INSERT INTO " . self::getTable() . " ($fields_array) VALUES ($values_array);";
-        Database::ExeQuery($sql);
+        Database::query($sql);
     }
 
     /**
@@ -212,7 +214,7 @@ class Database
         $set_array = Database::setArrayParameters('set', $set);
         $conditions_array = Database::setArrayParameters('where', $condition);
         $sql = "UPDATE " . self::getTable() . " SET $set_array WHERE ($conditions_array) ;";
-        Database::ExeQuery($sql);
+        Database::query($sql);
     }
 
     /**
@@ -242,7 +244,7 @@ class Database
         }
 
         $sql = "SELECT $fields_array FROM " . self::getTable() . " $conditions_array ;";
-        return Database::ExeQuery($sql);
+        return Database::query($sql);
     }
 
     /**
@@ -257,28 +259,32 @@ class Database
     {
         $conditions_array = Database::setArrayParameters('where', $conditions);
         $sql = "DELETE FROM " . self::getTable() . " WHERE ($conditions_array)";
-        Database::ExeQuery($sql);
+        Database::query($sql);
     }
 
-    public static function createTable($tableName, $fields, $typeTable='InnoDB', $charset='utf8', $collate='utf8_unicode_ci')
+    /**
+     * Создание таблицы
+     * @param $tableName
+     * @param $fields
+     * @param string $typeTable
+     * @param string $charset
+     * @param string $collate
+     */
+    public static function createTable($tableName, $fields, $typeTable = 'InnoDB', $charset = 'utf8', $collate = 'utf8_unicode_ci')
     {
         $fields_values_array = Database::setArrayParameters('table', $fields);
         $sql = "CREATE TABLE IF NOT EXISTS $tableName($fields_values_array) ENGINE = $typeTable DEFAULT CHARSET = $charset COLLATE = $collate;";
-        Database::exeQuery($sql);
-                /*(id SERIAL,
-                login VARCHAR(50),
-                password VARCHAR(50),
-                role ENUM('default','admin','owner') NOT NULL DEFAULT  'default'
-                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";*/
+        Database::query($sql);
     }
 
     /**
      * Преобразовывает массив в строку
      * @param $type string
      * @param $data array массив с данными
-     * @param $operands логический оператор
-     * @return string возвращает преобразованную строку из массива
+     * @param null $operand
      * @throws Exception
+     * @internal param $operands логический оператор
+     * @return string возвращает преобразованную строку из массива
      */
     public static function setArrayParameters($type, $data, $operand = null)
     {
